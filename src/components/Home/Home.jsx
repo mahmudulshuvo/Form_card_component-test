@@ -1,22 +1,16 @@
-import React, { Component, Fragment } from "react";
-import "./App.css";
+import React, { Component } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import SearchBar from "./components/SearchBar/SearchBar";
-import FormTemplate from "./components/FormTemplate/FormTemplate";
-import { data } from "./data";
+import SearchBar from "../SearchBar/SearchBar";
+import FormTemplate from "../FormTemplate/FormTemplate";
+import { data } from "../../data";
 import moment from "moment";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
-import Home from "./components/Home/Home";
-import { Security, SecureRoute, ImplicitCallback } from "@okta/okta-react";
-import { Switch, Route, Link, BrowserRouter } from "react-router-dom";
-import Login from "./components/Auth/Login";
+import Button from "@material-ui/core/Button";
+import { withAuth } from "@okta/okta-react";
 
-function onAuthRequired({ history }) {
-    history.push("/login");
-}
-class App extends Component {
+class Home extends Component {
     classes = {
         logo: {
             margin: "auto",
@@ -50,9 +44,33 @@ class App extends Component {
             url: "",
             serachQuery: "",
             cardList: data,
-            searchFoundCards: []
+            searchFoundCards: [],
+            authenticated: null
         };
     }
+
+    checkAuthentication = async () => {
+        const authenticated = await this.props.auth.isAuthenticated();
+        if (authenticated !== this.state.authenticated) {
+            this.setState({ authenticated });
+        }
+    };
+
+    async componentDidMount() {
+        this.checkAuthentication();
+    }
+
+    async componentDidUpdate() {
+        this.checkAuthentication();
+    }
+
+    login = async () => {
+        this.props.auth.login("/");
+    };
+
+    logout = async () => {
+        this.props.auth.logout("/");
+    };
 
     handleChangeAs2id = event => {
         this.setState({
@@ -340,44 +358,75 @@ class App extends Component {
     };
 
     render() {
-        return (
-            <BrowserRouter>
-                <Security
-                    issuer="https://dev-727324.okta.com/oauth2/default"
-                    client_id="0oailab02oi4rDCa4356"
-                    redirect_uri={window.location.origin + "/implicit/callback"}
-                    onAuthRequired={onAuthRequired}
+        if (this.state.authenticated === null) return null;
+        const mainContent = this.state.authenticated ? (
+            <div
+                style={{
+                    display: "flex",
+                    flexDirection: "column"
+                }}
+            >
+                <div>
+                    <AppBar position="sticky">
+                        <Toolbar>
+                            <div style={this.classes.logoHorizontallyCenter}>
+                                <img
+                                    src={require("../../logo1.jpg")}
+                                    className={this.classes.logo}
+                                    alt="logo"
+                                />
+                            </div>
+                        </Toolbar>
+                    </AppBar>
+                </div>
+
+                <div
+                    style={{
+                        display: "flex",
+                        height: "100%"
+                    }}
                 >
-                    <div className="App">
-                        <Route
-                            path="/"
-                            render={({ location }) => (
-                                <Fragment>
-                                    <Switch>
-                                        <SecureRoute
-                                            path="/"
-                                            exact={true}
-                                            render={() => <Home />}
-                                        />
-                                        <Route
-                                            path="/login"
-                                            render={() => (
-                                                <Login baseUrl="https://dev-727324.okta.com" />
-                                            )}
-                                        />
-                                        <Route
-                                            path="/implicit/callback"
-                                            component={ImplicitCallback}
-                                        />
-                                    </Switch>
-                                </Fragment>
-                            )}
-                        />
-                    </div>
-                </Security>
-            </BrowserRouter>
+                    <SearchBar
+                        serachQuery={this.state.serachQuery}
+                        handleSearch={this.handleSearch}
+                        cardList={this.state.cardList}
+                        handleFormEdit={this.handleFormEdit}
+                        searchFoundList={this.state.searchFoundCards}
+                        handleDeleteCard={this.handleDeleteCard}
+                    />
+                    <FormTemplate
+                        state={this.state}
+                        handleChangeAs2id={this.handleChangeAs2id}
+                        handleChangeEdiEnabled={this.handleChangeEdiEnabled}
+                        handleChangeEmail={this.handleChangeEmail}
+                        handleChangeEncrypAlgo={this.handleChangeEncrypAlgo}
+                        handleChangeEntityName={this.handleChangeEntityName}
+                        handleChangeFusionId={this.handleChangeFusionId}
+                        handleChangeGsId={this.handleChangeGsId}
+                        handleChangeIsaId={this.handleChangeIsaId}
+                        handleChangeMdnType={this.handleChangeMdnType}
+                        handleChangeShipMethod={this.handleChangeShipMethod}
+                        handleChangeSigingAlgo={this.handleChangeSigingAlgo}
+                        handleChangeUrl={this.handleChangeUrl}
+                        handleChangeCert={this.handleChangeCert}
+                        handleSubmit={this.handleSubmit}
+                        handleRevert={this.handleRevert}
+                        logout={this.logout}
+                    />
+                </div>
+            </div>
+        ) : (
+            <div>
+                <p>Please get your credentials to login</p>
+
+                <Button variant="contained" onClick={this.login}>
+                    Login
+                </Button>
+            </div>
         );
+
+        return <div>{mainContent}</div>;
     }
 }
 
-export default App;
+export default withAuth(Home);

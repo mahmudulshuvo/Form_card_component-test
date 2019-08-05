@@ -2,11 +2,11 @@ export const data = [
     {
         as2_id: "ArmadaSCS",
 
-        edi_enabled: true,
+        edi_enabled: "true",
 
         email: "admin@armada.com",
 
-        encryption_algo: "3DES",
+        encryption_algo: [{ label: "4DES" }],
 
         entity_name: "Armada",
 
@@ -30,11 +30,11 @@ export const data = [
     {
         as2_id: "ArmadaTEST",
 
-        edi_enabled: true,
+        edi_enabled: "false",
 
         email: "admin@armadaTEST.com",
 
-        encryption_algo: "3DES",
+        encryption_algo: [{ label: "3DES" }],
 
         entity_name: "Armada",
 
@@ -54,4 +54,10 @@ export const data = [
 
         url: "http://edi-test.armada.net:8080/invoke/wm.EDIINT/receive"
     }
+];
+
+export const options = [
+    { label: "3DES" },
+    { label: "4DES" },
+    { label: "5DES" }
 ];

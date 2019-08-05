@@ -16,7 +16,7 @@ const SearchBar = ({
             style={{
                 flexGrow: 1,
                 minWidth: "300px",
-                height: "1300px"
+                height: "1000px"
             }}
         >
             <div
